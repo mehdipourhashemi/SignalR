@@ -1,0 +1,68 @@
+﻿@model test.ViewModels.UserDto
+<head>
+    <script src="~/js/persian-datepicker.min.js"></script>
+    <script src="~/js/persiandate.min.js"></script>
+    <link href="~/css/persian-datepicker.min.css" rel="stylesheet" />
+</head>
+<body dir="rtl">
+    <div class="container">
+        <div class="">
+            <form asp-action="Register" asp-controller="Authenticate">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="FirstName">نام : </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="FirstName" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="LastName"> نام خانوادگی : </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="LastName" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="JalaliBirthDate">تاریخ تولد : </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="JalaliBirthDate" readonly id="JalaliBirthDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="UserName">نام کاربری : </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="UserName" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="password">رمز عبور : </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="password" />
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-4">
+                            <label asp-for="ConfirmPassword">تکرار رمز عبور :  </label>
+                        </div>
+                        <div class="col-md-8">
+                            <input asp-for="ConfirmPassword" />
+                        </div>
+                    </div>
+                </div>
+                <input type ="submit" value="ثبت">
+            </form>
+        </div>
+    </div>
+    <script>
+        
+    </script>
+</body>

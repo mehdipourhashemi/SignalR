@@ -1,0 +1,299 @@
+﻿<head>
+    <script src="~/js/swal-v2.js"></script>
+    <script src="~/js/SignalR.js"></script>
+    <script src="~/js/site.js"></script>
+    <style>
+        /*.clock::before {
+            content: '\f017';
+            font-family: "Font Awesome 6 free";
+            font-weight: 400;
+            float:right;
+        }*/
+        /*.tick::before {
+            content: '\f003';
+            font-family: "Font Awesome 6 free";
+            font-weight: 400;
+            float: right;
+        }*/
+        .LoadMore {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 7px;
+            margin: auto;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+        }
+
+        body {
+            font-family: "Lato", sans-serif;
+        }
+
+        p.RecevedMessage {
+            background-color: #487add;
+            color: white;
+            display: inline-block;
+            float: left;
+            padding: 10px;
+            margin-bottom: 5px;
+            max-width: 100%;
+        }
+
+        p.SentMessage {
+            background-color: #28ab8f;
+            color: white;
+            display: inline-block;
+            float: right;
+            padding: 10px;
+            margin-bottom: 5px;
+            max-width: 100%;
+        }
+
+        .time {
+            text-align: center;
+            font-size: 12px;
+            background-color: #f6f8f1;
+        }
+
+        .message-container {
+            width: 100%;
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .sidenav {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+            .sidenav a {
+                padding: 8px 8px 8px 32px;
+                text-decoration: none;
+                font-size: 25px;
+                color: #818181;
+                display: block;
+                transition: 0.3s;
+            }
+
+                .sidenav a:hover {
+                    color: #f1f1f1;
+                }
+
+            .sidenav .closebtn {
+                position: absolute;
+                top: 0;
+                right: 25px;
+                font-size: 36px;
+                margin-left: 50px;
+            }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+
+        @@media screen and (max-height: 450px) {
+            .sidenav {
+                padding-top: 15px;
+            }
+
+                .sidenav a {
+                    font-size: 18px;
+                }
+        }
+    </style>
+</head>
+<body onresize="changeScreenSize()">
+
+    <div id="users" class="sidenav">
+
+    </div>
+
+    <div id="main" style="position:relative;">
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()"><i class="fa fa-users"></i> کاربران</span>
+        <div id="message_container" style="height:90%!important;" class="message-container row">
+
+        </div>
+        <div class="row fixed-bottom" style="position:fixed;bottom:20px;height:10%!important;">
+            <div class="col-md-11">
+                <input id="MessageText" type="text" style="float:right;width:50%;" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <button class="btn" style="background-color:#28ab8f" onclick="SendMessage()"><i class="	glyphicon glyphicon-plus"></i>send</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var UserId;
+        var PageNumber = 0;
+        var clock = `<i style = 'float:right;' class = "fa fa-clock"></i>`;
+        var tick = `<i  style = 'float:right;' class = "fa fa-check"></i>`;
+
+        $(document).ready(function () {
+
+            changeScreenSize();
+        });
+        function changeScreenSize() {
+            if (window.innerWidth > 1000) {
+                openNav();
+            }
+            else {
+                closeNav();
+            }
+        }
+        function openNav() {
+            //document.getElementById("users").style.width = "250px";
+            document.getElementById("users").style.left = "0px";
+            //document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            //document.getElementById("users").style.width = "0";
+            document.getElementById("users").style.left = "-250px";
+            //document.getElementById("main").style.marginLeft = "0";
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chat")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        function start() {
+            connection.start().then(() => {
+                swal.fire('', "شما متصل شدید", 'success');
+                LoadUsers().then(() => {
+                    addEvent();
+                });
+            }).catch(() => {
+                swal.fire('', "در حال اتصال مجدد...", 'error');
+                setTimeout(start, 5000);
+            });
+        }
+        connection.on("ReceiveMessage", function (userid, message, messageId) {
+
+            let tr = `<div data-id = ${messageId} class='col-md-12'><p class = 'RecevedMessage rounded' style = ''>${message}</p></div>`;
+            $('#message_container').append(tr);
+            connection.invoke('DeliveryMessageInClient', messageId);
+        });
+
+        function LoadUsers() {
+            return new Promise((resolve) => {
+                var url = '/chat/LoadUsers';
+                $.post(url, function (result) {
+
+                    if (result.isSuccess) {
+                        let user = '<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>';
+                        for (let i = 0; i < result.data.length; i++) {
+                            user += `<a style = 'color:${result.data[i].isOnline ? 'green' : 'white'}'
+                                    data-userid='${result.data[i].id}' href="#" class = 'user'>${result.data[i].fullName} - ${result.data[i].messageCount}</a>`;
+                        }
+                        $('#users').html(user);
+                    }
+                    else {
+
+                    }
+                    resolve();
+                });
+            });
+        }
+        start();
+        function addEvent() {
+            $('#users a.user').on('click', function (el) {
+                $('#users a').css('border', '');
+                el.currentTarget.style.border = "1px solid white";
+                UserId = el.currentTarget.dataset["userid"];
+                PageNumber = 0;
+                $('#message_container').html(`<button class = 'LoadMore btn btn-success' onclick = 'LoadMore()'><i class='fa fa-angle-double-up'></i></button>`);
+                loadMessages(UserId);
+            });
+        }
+
+        function loadMessages(userid) {
+            var url = '/chat/LoadMessages';
+            var inpuModel = {
+                Id: userid,
+                PageCount: 4,
+                PageNumber: PageNumber + 1
+            }
+            $.post(url, { Targetuser: inpuModel }, function (result) {
+                if (result.isSuccess) {
+                    if (result.data.length > 0) {
+                        PageNumber++;
+                        PickMessages(result.data);
+                        DeliveryReceivedMessages();
+                    }
+                    else {
+                        swal.fire('!', 'پیامی وجود ندارد', 'warning');
+                    }
+                }
+                else {
+
+                }
+            });
+        }
+        function PickMessages(data) {
+
+            let messages = ``;
+            for (let i = 0; i < data.length; i++) {
+                let stateIcon = '';
+                messages += `<p class = 'col-md-12 time' style = 'text-align:center;'>${data[i].time}</p>`;
+                if (data[i].isReceivedMessage) {
+                    messages += `<div class='col-md-12 RecevedMessage' data-id = '${data[i].uniqId}'><p class = 'RecevedMessage rounded' style = ''>${data[i].text}</p></div>`;
+                }
+                else {
+                    if (data[i].isReceived) {
+                        stateIcon = tick;
+                    }
+                    messages += `<div class='col-md-12 SentMessage' data-id = '${data[i].uniqId}'>${stateIcon}<p class = 'SentMessage rounded' style = ''>${data[i].text}</p></div>`;
+                }
+            }
+            $('#message_container').prepend(messages);
+        }
+
+        function SendMessage() {
+            var id = generateUUID();
+
+            var message = $('#MessageText').val();
+            if ($('#MessageText').val().replaceAll(' ', '') == '' || $('#MessageText').val() == null) {
+                return
+            }
+            if (UserId == null) {
+                swal.fire('خطا', 'یک کاربر را انتخاب کنید', 'error')
+                return
+            }
+            connection.invoke('SendMessageToOne', message, id, UserId);
+            $('#message_container').append(`<div data-id = ${id} class='col-md-12 clock'><div class = 'stateIcon'>${clock}</div><p class = 'SentMessage rounded'>${message}</p></div>`);
+            $('#MessageText').val('');
+        }
+        connection.on("DeliveryMessageInServer", function (messageId) {
+
+            $(`#message_container div[data-id=${messageId}] div.stateIcon`).html(``);
+        });
+        connection.on("SentMessageToClient", function (messageId) {
+            $(`#message_container div[data-id=${messageId}] div.stateIcon`).html(tick);
+        });
+        function LoadMore() {
+            loadMessages(UserId);
+        }
+        function DeliveryReceivedMessages() {
+            var messageIds = [];
+            for (let i = 0; i < $(`#message_container div.RecevedMessage`).length; i++) {
+                var id = $(`#message_container div.RecevedMessage`)[i].dataset['id'];
+                messageIds.push(id);
+            }
+            if (messageIds.length > 0) {
+
+                connection.invoke('DeliveryMessageInClientList', messageIds);
+            }
+        }
+    </script>
+</body>
