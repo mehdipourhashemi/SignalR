@@ -8,6 +8,8 @@ using test.Interface;
 using test.Models.MessageModel;
 using test.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace test.Services
 {
@@ -25,9 +27,9 @@ namespace test.Services
             try
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
-                var cacheKey = $"connectionid_${userId}";
-                memoryCache.Set(cacheKey, connectioId , cacheEntryOptions);
-
+                var cacheKey = $"connectionid_{userId}";
+                memoryCache.Set(cacheKey, connectioId, cacheEntryOptions);
+                
                 var user = await db.users.FindAsync(userId);
                 if (user != null)
                 {
@@ -42,17 +44,17 @@ namespace test.Services
                 }
                 return new ResultDto<bool>();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new ResultDto<bool> { IsSuccess = false, Message = e.Message, };
             }
-            
+
         }
 
         public async Task OfflineUser(Guid userId)
         {
             var user = await db.users.Where(u => u.Id == userId).FirstOrDefaultAsync();
-            if(user != null)
+            if (user != null)
             {
                 user.IsOnline = false;
                 db.Update(user);
@@ -77,7 +79,7 @@ namespace test.Services
                 await db.SaveChangesAsync();
                 return new ResultDto<bool>() { };
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new ResultDto<bool>() { IsSuccess = false, Message = e.Message };
             }
@@ -92,13 +94,13 @@ namespace test.Services
                     SenderUserId = sender,
                     Text = MessageText,
                     Time = DateTime.Now,
-                    UniqId= messageId
+                    UniqId = messageId
                 };
                 await db.messages.AddAsync(message);
                 await db.SaveChangesAsync();
                 return new ResultDto<bool> { };
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new ResultDto<bool> { IsSuccess = false, Message = e.Message, };
             }
@@ -116,7 +118,7 @@ namespace test.Services
 
                 if (message == null)
                 {
-                    
+
                     throw new Exception("پیام یافت نشد");
                 }
                 else
@@ -124,7 +126,7 @@ namespace test.Services
                     return new ResultDto<MessageDto>() { Data = message };
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new ResultDto<MessageDto> { IsSuccess = false, Message = e.Message };
             }
@@ -146,11 +148,11 @@ namespace test.Services
                     throw new Exception("پیام یافت نشد");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return new ResultDto<bool> { IsSuccess = false, Message = e.Message };
             }
-            
+
         }
 
         public async Task<ResultDto<bool>> ReceiveMessage(Guid messageId)

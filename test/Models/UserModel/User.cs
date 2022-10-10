@@ -24,5 +24,7 @@ namespace test.Models.UserModel
         public bool IsOnline { get; set; } = false;
         public virtual ICollection<Message> ReceivedMessages { get; set; }
         public virtual ICollection<Message> SendMessages { get; set; }
+        public virtual ICollection<Contact> FollowingUsers { get; set; }
+        public virtual ICollection<Contact> FollowerUsers { get; set; }
     }
 }

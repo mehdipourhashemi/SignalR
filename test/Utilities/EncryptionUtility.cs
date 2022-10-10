@@ -35,7 +35,7 @@ namespace test.Utilities
         {
             return Guid.NewGuid().ToString();
         }
-        public string GetNewToken(Guid userId, string FirstName, string LastName)
+        public string GetNewToken(Guid userId, string FirstName, string LastName, string UserName)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(tokenKey);
@@ -46,6 +46,7 @@ namespace test.Utilities
                     new Claim("userId", userId.ToString()),
                     new Claim("FirstName", FirstName),
                     new Claim("LastName", LastName),
+                    new Claim("UserName", UserName),
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -64,11 +65,13 @@ namespace test.Utilities
                 var userId = tokenS.Payload.Where(t => t.Key == "userId").FirstOrDefault().Value.ToString();
                 var FirstName = tokenS.Payload.Where(t => t.Key == "FirstName").FirstOrDefault().Value.ToString();
                 var LastName = tokenS.Payload.Where(t => t.Key == "LastName").FirstOrDefault().Value.ToString();
+                var UserName = tokenS.Payload.Where(t => t.Key == "UserName").FirstOrDefault().Value.ToString();
                 return new UserDto()
                 {
                     Id = Guid.Parse(userId),
                     FirstName = FirstName,
                     LastName = LastName,
+                    UserName = UserName,
                 };
             }
             return null;
@@ -81,10 +84,16 @@ namespace test.Utilities
                 var handler = new JwtSecurityTokenHandler();
                 var jsonToken = handler.ReadToken(cookie);
                 var tokenS = jsonToken as JwtSecurityToken;
-                var t = tokenS.Payload.Where(t => t.Key == "userId").FirstOrDefault().Value.ToString();
+                var userId = tokenS.Payload.Where(t => t.Key == "userId").FirstOrDefault().Value.ToString();
+                var FirstName = tokenS.Payload.Where(t => t.Key == "FirstName").FirstOrDefault().Value.ToString();
+                var LastName = tokenS.Payload.Where(t => t.Key == "LastName").FirstOrDefault().Value.ToString();
+                var UserName = tokenS.Payload.Where(t => t.Key == "UserName").FirstOrDefault().Value.ToString();
                 return new UserDto()
                 {
-                    Id = Guid.Parse(t),
+                    Id = Guid.Parse(userId),
+                    FirstName = FirstName,
+                    LastName = LastName,
+                    UserName = UserName,
                 };
             }
             return null;

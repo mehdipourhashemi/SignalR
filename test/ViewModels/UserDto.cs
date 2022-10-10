@@ -25,6 +25,9 @@ namespace test.ViewModels
         public int PageNumber { get; set; } = 1;
         public int PageCount { get; set; } = 4;
         public int MessageCount { get; set; }
+        public bool? IsInContact { get; set; }
+        public Guid? FollowerUserId { get; set; }
+        public Guid? FollowingUserId { get; set; }
 
     }
 }

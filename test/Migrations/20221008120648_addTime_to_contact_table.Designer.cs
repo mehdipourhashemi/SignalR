@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using test.DB_Context;
 
 namespace test.Migrations
 {
     [DbContext(typeof(chatDBContext))]
-    partial class chatDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221008120648_addTime_to_contact_table")]
+    partial class addTime_to_contact_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

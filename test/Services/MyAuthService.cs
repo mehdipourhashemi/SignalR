@@ -8,6 +8,7 @@ using test.Models.UserModel;
 using test.Utilities;
 using test.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
+using System.Diagnostics;
 
 namespace test.Services
 {
@@ -68,7 +69,7 @@ namespace test.Services
             if (passwordHash == user.PasswordHash)
             {
                 result.UserName = user.UserName;
-                result.Token = encrypt.GetNewToken(user.Id, user.FirstName, user.LastName);
+                result.Token = encrypt.GetNewToken(user.Id, user.FirstName, user.LastName, user.UserName);
                 result.RefreshToken = encrypt.GetNewRefreshToken();
                 return result;
             }
@@ -106,16 +107,16 @@ namespace test.Services
         {
             try
             {
-                var cacheKey = $"connectionid_${id}";
+                var cacheKey = $"connectionid_{id}";
                 string cacheValue;
                 if (!memoryCache.TryGetValue(cacheKey, out cacheValue))
                 {
-                    var user = db.users.Where(u => u.Id == id).FirstOrDefault();
+                    var user = await db.users.FindAsync(id);
                     if (user != null)
                     {
                         cacheValue = user.ConnectionId;
-                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(10));
-                        memoryCache.Set(cacheKey, user.ConnectionId, TimeSpan.FromSeconds(10));
+                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
+                        memoryCache.Set(cacheKey, user.ConnectionId, cacheEntryOptions);
                     }
                     else
                     {

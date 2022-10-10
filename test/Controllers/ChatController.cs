@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using test.Interface;
+using test.Models.UserModel;
 using test.Utilities;
 using test.ViewModels;
 
@@ -29,8 +30,8 @@ namespace test.Controllers
         public async Task<IActionResult> LoadUsers()
         {
             var userId = new EncryptionUtility().UserInfo(HttpContext).Id;
-            var users = await db.LoadUsers();
-            users.Data = users.Data.Where(u => u.Id != userId).ToList();
+            var users = await db.LoadUsers(userId);
+            users.Data = users.Data;//.Where(u => u.Id != userId).ToList();
             return Ok(users);
         }
         [HttpPost]
@@ -39,6 +40,31 @@ namespace test.Controllers
             var UserId = new EncryptionUtility().UserInfo(HttpContext).Id;
             var messages = await db.LoadMessages(UserId, Targetuser.Id, Targetuser.PageNumber, Targetuser.PageCount);
             return Ok(messages);
+        }
+        public async Task<IActionResult> Mod_Contacts()
+        {
+            return View("~/Views/Chat/Mod_Contacts.cshtml");
+        }
+        [HttpPost]
+        public async Task<IActionResult> SearchUsers(UserDto model)
+        {
+            model.FollowerUserId = new EncryptionUtility().UserInfo(HttpContext).Id;
+            var user = await db.SearchUser(model);
+            return Ok(user);
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddContact(Contact model)
+        {
+            model.FollowerUserId = new EncryptionUtility().UserInfo(HttpContext).Id;
+            var result = await db.AddContact(model);
+            return Ok(result);
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteContact(Contact model)
+        {
+            model.FollowerUserId = new EncryptionUtility().UserInfo(HttpContext).Id;
+            var result = await db.DeleteContact(model);
+            return Ok(result);
         }
     }
 }

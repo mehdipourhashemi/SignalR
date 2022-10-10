@@ -1,20 +1,11 @@
-﻿<head>
+﻿@{ var user = new test.Utilities.EncryptionUtility().UserInfo(Context);}
+<head>
     <script src="~/js/swal-v2.js"></script>
     <script src="~/js/SignalR.js"></script>
     <script src="~/js/site.js"></script>
+    <link href="~/css/balloon.css" rel="stylesheet" />
     <style>
-        /*.clock::before {
-            content: '\f017';
-            font-family: "Font Awesome 6 free";
-            font-weight: 400;
-            float:right;
-        }*/
-        /*.tick::before {
-            content: '\f003';
-            font-family: "Font Awesome 6 free";
-            font-weight: 400;
-            float: right;
-        }*/
+
         .LoadMore {
             width: 40px;
             height: 40px;
@@ -113,13 +104,32 @@
     </style>
 </head>
 <body onresize="changeScreenSize()">
-
-    <div id="users" class="sidenav">
-
+    <div class="modal fade" id="Contact_Modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:70%">
+            <div class="modal-content">
+                <div class="modal-header ">
+                    <h5 class="alert alert-info">Contact</h5>
+                </div>
+                <div id="modalbody" class="modal-body">
+                    
+                </div>
+            </div>
+        </div>
     </div>
+    <div id="users" class="sidenav">
+        <h5 style=" color: white; text-align: right;margin-right: 15px;">لیست کاربران</h5>
+        <hr style="border: 1px solid #949494;">
+        <i id="spiner" class="fa fa-spinner fa-spin" style="position: absolute; top: 20%; left: 50%; display: none; color: #007823; font-size: 55px; transform: translate(-50%, -50%);"></i>
+        <div id="users_Container" class="">
 
+        </div>
+    </div>
+    <div class="">
+        <h5> @user.FirstName @user.LastName - @user.UserName</h5>
+    </div>
     <div id="main" style="position:relative;">
-        <span style="font-size:30px;cursor:pointer" onclick="openNav()"><i class="fa fa-users"></i> کاربران</span>
+        <span   data-balloon-pos="up" data-balloon=" کاربران"  class="btn" style="font-size:30px;cursor:pointer" onclick="openNav()"><i class="fa fa-users"></i></span>
+        <button  data-balloon-pos="up" data-balloon="مدیریت کاربران" style="font-size:30px;cursor:pointer" class="btn" onclick="OpenModal_Contacts()"><i class="fa fa-user-plus" aria-hidden="true"></i></button>
         <div id="message_container" style="height:90%!important;" class="message-container row">
 
         </div>
@@ -132,6 +142,7 @@
             </div>
         </div>
     </div>
+    
     <script>
         var UserId;
         var PageNumber = 0;
@@ -141,6 +152,11 @@
         $(document).ready(function () {
 
             changeScreenSize();
+            $('#MessageText').on('keyup', function (el) {
+                if (el.originalEvent.keyCode == 13) {
+                    SendMessage();
+                }
+            });
         });
         function changeScreenSize() {
             if (window.innerWidth > 1000) {
@@ -187,6 +203,7 @@
 
         function LoadUsers() {
             return new Promise((resolve) => {
+                $('#spiner').show();
                 var url = '/chat/LoadUsers';
                 $.post(url, function (result) {
 
@@ -194,9 +211,10 @@
                         let user = '<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>';
                         for (let i = 0; i < result.data.length; i++) {
                             user += `<a style = 'color:${result.data[i].isOnline ? 'green' : 'white'}'
-                                    data-userid='${result.data[i].id}' href="#" class = 'user'>${result.data[i].fullName} - ${result.data[i].messageCount}</a>`;
+                                                            data-userid='${result.data[i].id}' href="#" class = 'user'>${result.data[i].fullName} - ${result.data[i].messageCount}</a>`;
                         }
-                        $('#users').html(user);
+                        $('#users_Container').html(user);
+                        $('#spiner').hide();
                     }
                     else {
 
@@ -207,8 +225,8 @@
         }
         start();
         function addEvent() {
-            $('#users a.user').on('click', function (el) {
-                $('#users a').css('border', '');
+            $('#users_Container a.user').on('click', function (el) {
+                $('#users_Container a').css('border', '');
                 el.currentTarget.style.border = "1px solid white";
                 UserId = el.currentTarget.dataset["userid"];
                 PageNumber = 0;
@@ -294,6 +312,13 @@
 
                 connection.invoke('DeliveryMessageInClientList', messageIds);
             }
+        }
+        function OpenModal_Contacts() {
+            var url = '/chat/Mod_Contacts';
+            $.get(url, function (result) {
+                $('#modalbody').html(result);
+                $('#Contact_Modal').modal();
+            });
         }
     </script>
 </body>
