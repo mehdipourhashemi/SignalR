@@ -23,6 +23,7 @@ namespace test.Models.MessageModel
         public bool IsReceivedMessage  { get; set; }
         public Guid UniqId { get; set; }
         public string ConnectionId { get; set; }
+        public DateTime? FirstMessageTime { get; set; }
 
     }
 }

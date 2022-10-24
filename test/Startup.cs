@@ -39,6 +39,7 @@ namespace test
             services.AddScoped(typeof(IMyAuthService), typeof(MyAuthService));
             services.AddScoped(typeof(IHubService), typeof(HubService));
             services.AddScoped(typeof(IChatService), typeof(ChatService));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

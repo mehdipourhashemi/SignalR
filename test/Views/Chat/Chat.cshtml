@@ -105,7 +105,7 @@
 </head>
 <body onresize="changeScreenSize()">
     <div class="modal fade" id="Contact_Modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="width:70%">
+        <div class="modal-dialog" style="width:90%">
             <div class="modal-content">
                 <div class="modal-header ">
                     <h5 class="alert alert-info">Contact</h5>
@@ -128,7 +128,7 @@
         <h5> @user.FirstName @user.LastName - @user.UserName</h5>
     </div>
     <div id="main" style="position:relative;">
-        <span   data-balloon-pos="up" data-balloon=" کاربران"  class="btn" style="font-size:30px;cursor:pointer" onclick="openNav()"><i class="fa fa-users"></i></span>
+        <span   data-balloon-pos="up" data-balloon=" کاربران"  class="btn" style="font-size:30px;cursor:pointer" onclick="OpenUser_Nav()"><i class="fa fa-users"></i></span>
         <button  data-balloon-pos="up" data-balloon="مدیریت کاربران" style="font-size:30px;cursor:pointer" class="btn" onclick="OpenModal_Contacts()"><i class="fa fa-user-plus" aria-hidden="true"></i></button>
         <div id="message_container" style="height:90%!important;" class="message-container row">
 
@@ -184,20 +184,23 @@
             .build();
 
         function start() {
-            connection.start().then(() => {
-                swal.fire('', "شما متصل شدید", 'success');
-                LoadUsers().then(() => {
-                    addEvent();
+            if (connection.state != 'Connected') {
+                connection.start().then(() => {
+                    swal.fire('', "شما متصل شدید", 'success');
+                    LoadUsers().then(() => {
+                        addEvent();
+                    });
+                }).catch(() => {
+                    swal.fire('', "در حال اتصال مجدد...", 'error');
+                    setTimeout(start, 5000);
                 });
-            }).catch(() => {
-                swal.fire('', "در حال اتصال مجدد...", 'error');
-                setTimeout(start, 5000);
-            });
+            }
         }
         connection.on("ReceiveMessage", function (userid, message, messageId) {
-
-            let tr = `<div data-id = ${messageId} class='col-md-12'><p class = 'RecevedMessage rounded' style = ''>${message}</p></div>`;
-            $('#message_container').append(tr);
+            if (userid == UserId) {
+                let tr = `<div data-id = ${messageId} class='col-md-12'><p class = 'RecevedMessage rounded' style = ''>${message}</p></div>`;
+                $('#message_container').append(tr);
+            }
             connection.invoke('DeliveryMessageInClient', messageId);
         });
 
@@ -227,7 +230,9 @@
         function addEvent() {
             $('#users_Container a.user').on('click', function (el) {
                 $('#users_Container a').css('border', '');
+                $('#users_Container a').css('background-color', '');
                 el.currentTarget.style.border = "1px solid white";
+                el.currentTarget.style.backgroundColor = "#e2b200";
                 UserId = el.currentTarget.dataset["userid"];
                 PageNumber = 0;
                 $('#message_container').html(`<button class = 'LoadMore btn btn-success' onclick = 'LoadMore()'><i class='fa fa-angle-double-up'></i></button>`);
@@ -240,12 +245,12 @@
             var inpuModel = {
                 Id: userid,
                 PageCount: 4,
-                PageNumber: PageNumber + 1
+                PageNumber: 1
             }
             $.post(url, { Targetuser: inpuModel }, function (result) {
                 if (result.isSuccess) {
                     if (result.data.length > 0) {
-                        PageNumber++;
+                        //PageNumber++;
                         PickMessages(result.data);
                         DeliveryReceivedMessages();
                     }
@@ -265,13 +270,13 @@
                 let stateIcon = '';
                 messages += `<p class = 'col-md-12 time' style = 'text-align:center;'>${data[i].time}</p>`;
                 if (data[i].isReceivedMessage) {
-                    messages += `<div class='col-md-12 RecevedMessage' data-id = '${data[i].uniqId}'><p class = 'RecevedMessage rounded' style = ''>${data[i].text}</p></div>`;
+                    messages += `<div data-time = ${data[i].time} class='col-md-12 RecevedMessage' data-id = '${data[i].uniqId}'><p class = 'RecevedMessage rounded'  style = ''>${data[i].text}</p></div>`;
                 }
                 else {
                     if (data[i].isReceived) {
                         stateIcon = tick;
                     }
-                    messages += `<div class='col-md-12 SentMessage' data-id = '${data[i].uniqId}'>${stateIcon}<p class = 'SentMessage rounded' style = ''>${data[i].text}</p></div>`;
+                    messages += `<div data-time = ${data[i].time} class='col-md-12 SentMessage' data-id = '${data[i].uniqId}'>${stateIcon}<p class = 'SentMessage rounded' style = ''>${data[i].text}</p></div>`;
                 }
             }
             $('#message_container').prepend(messages);
@@ -300,7 +305,25 @@
             $(`#message_container div[data-id=${messageId}] div.stateIcon`).html(tick);
         });
         function LoadMore() {
-            loadMessages(UserId);
+            var first_time = $('#message_container div').first().data('time') == undefined ? null : $('#message_container div').first().data('time');
+            var url = '/chat/LoadMessage_LastMessageTime';
+            debugger
+            var inputModel = {
+                FirstMessageTime: first_time,
+                Id: UserId,
+                PageCount: 4, };
+            $.post(url, { model: inputModel }, function (result) {
+                if (result.isSuccess) {
+                    if (result.data.length > 0) {
+                        //PageNumber++;
+                        PickMessages(result.data);
+                        DeliveryReceivedMessages();
+                    }
+                    else {
+                        swal.fire('!', 'پیامی وجود ندارد', 'warning');
+                    }
+                }
+            })
         }
         function DeliveryReceivedMessages() {
             var messageIds = [];
@@ -319,6 +342,16 @@
                 $('#modalbody').html(result);
                 $('#Contact_Modal').modal();
             });
+        }
+        function OpenUser_Nav() {
+            debugger
+            if (document.getElementById("users").style.left == '0px') {
+                closeNav();
+            }
+            else {
+                
+                openNav();
+            }
         }
     </script>
 </body>

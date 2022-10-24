@@ -12,8 +12,10 @@ namespace test.Interface
     {
         public Task<ResultDto<List<UserDto>>> LoadUsers(Guid userid);
         public Task<ResultDto<List<MessageDto>>> LoadMessages(Guid userid, Guid TargetUserId, int PageNumber, int PageCount);
+        public Task<ResultDto<List<MessageDto>>> LoadMessage_LastMessageTime(Guid userid, Guid TargetUserId, int PageNumber, int PageCount, DateTime? time );
         public Task<ResultDto<List<UserDto>>> SearchUser(UserDto user);
         public Task<ResultDto<bool>> AddContact(Contact model);
         public Task<ResultDto<bool>> DeleteContact(Contact model);
+        public Task<ResultDto<List<UserDto>>> SearchUser_dapper(UserDto model);
     }
 }

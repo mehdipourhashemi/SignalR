@@ -116,7 +116,7 @@ namespace test.Services
                     {
                         cacheValue = user.ConnectionId;
                         var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
-                        memoryCache.Set(cacheKey, user.ConnectionId, cacheEntryOptions);
+                        memoryCache.Set(cacheKey, cacheValue, cacheEntryOptions);
                     }
                     else
                     {

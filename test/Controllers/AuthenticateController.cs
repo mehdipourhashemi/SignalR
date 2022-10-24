@@ -39,6 +39,11 @@ namespace test.Controllers
         {
             return View("~/Views/Authenticate/LogIn.cshtml");
         }
+        public async Task<IActionResult> LogOut()
+        {
+            Response.Cookies.Delete("ChatToken");
+            return Redirect("~/Authenticate/LogIn");
+        }
         [HttpPost]
         public async Task<IActionResult> LogIn(UserDto model)
         {

@@ -98,6 +98,18 @@ namespace test.Utilities
             }
             return null;
         }
+        public bool IsLogIn(HttpContext context)
+        {
+            var cookie = context.Request.Cookies["ChatToken"];
+            if (cookie == null || !ValidateToken(cookie))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
         private static bool ValidateToken(string authToken)
         {
             try

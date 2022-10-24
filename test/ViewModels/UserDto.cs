@@ -28,6 +28,9 @@ namespace test.ViewModels
         public bool? IsInContact { get; set; }
         public Guid? FollowerUserId { get; set; }
         public Guid? FollowingUserId { get; set; }
+        public int Page { get; set; } = 1;
+        public int RowsPerPage { get; set; } = 50;
+        public DateTime? FirstMessageTime { get; set; }
 
     }
 }

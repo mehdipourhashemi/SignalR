@@ -10,16 +10,22 @@ using test.Models.MessageModel;
 using test.Models.UserModel;
 using test.Utilities;
 using test.ViewModels;
+using Dapper;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace test.Services
 {
     public class ChatService : IChatService
     {
         private readonly chatDBContext db;
+        private readonly string connectionString;
 
-        public ChatService(chatDBContext _db)
+        public ChatService(chatDBContext _db, IConfiguration config)
         {
             this.db = _db;
+            this.connectionString = config.GetConnectionString("default_dapper");
         }
 
         public async Task<ResultDto<bool>> AddContact(Contact model)
@@ -96,6 +102,33 @@ namespace test.Services
             }
         }
 
+        public async Task<ResultDto<List<MessageDto>>> LoadMessage_LastMessageTime(Guid userid, Guid TargetUserId, int PageNumber, int PageCount, DateTime? time)
+        {
+            try
+            {
+                var messages = await db.messages.Where(m =>
+            ((m.ReceiverUserId == userid && m.SenderUserId == TargetUserId) ||
+            (m.ReceiverUserId == TargetUserId && m.SenderUserId == userid)) && m.Time < time).Select(m => new MessageDto
+            {
+                Id = m.Id,
+                Text = m.Text,
+                IsRead = m.IsRead,
+                IsReceived = m.IsReceived,
+                Time = m.Time,
+                IsReceivedMessage = m.ReceiverUserId == userid ? true : false,
+                UniqId = m.UniqId,
+            }).OrderByDescending(m => m.Time).Take(PageCount).OrderBy(m => m.Time).ToListAsync();
+
+
+            
+                return new ResultDto<List<MessageDto>>() { Data = messages };
+            }
+            catch (Exception e)
+            {
+                return new ResultDto<List<MessageDto>>() { IsSuccess = false, Message = e.Message, };
+            }
+        }
+
         public async Task<ResultDto<List<UserDto>>> LoadUsers(Guid userid)
         {
             try
@@ -123,25 +156,29 @@ namespace test.Services
             var result = new ResultDto<List<UserDto>>();
             try
             {
-                var user = await db.users.Where(u => u.UserName.Contains(model.UserName) && u.Id != model.FollowerUserId).Select(u => new UserDto
+
+                var user = await db.users.Where(u => u.UserName.Contains(model.UserName)/* && u.Id != model.FollowerUserId*/).Select(u => new UserDto
                 {
                     Id = u.Id,
                     UserName = u.UserName,
                     FullName = u.FirstName + " " + u.LastName,
-                    IsInContact = u.FollowingUsers.Where(c => c.FollowerUserId == model.FollowerUserId).Count() > 0 ? true : false,
+                    IsInContact = u.FollowingUsers.Any(c => c.FollowerUserId == model.FollowerUserId) ? true : false,
 
-                }).ToListAsync();
+                }).Skip((model.Page-1)*model.RowsPerPage).Take(model.RowsPerPage).OrderBy(u => u.UserName).ToListAsync();
 
-                //var user2 = await (from u in db.users
-                //             join c in db.contacts on u.Id equals c.FollowingUserId into contact
-                //             from c2 in contact.Where(c => c.FollowerUserId == model.FollowerUserId)
-                //             select new UserDto()
-                //             {
-                //                 Id = u.Id,
-                //                 UserName = u.UserName,
-                //                 FullName = u.FirstName + " " + u.LastName,
-                //                 IsInContact = c2.Id == null ? false : true,
-                //             }).ToListAsync();
+                //var user = await (from u in db.users
+                //            join c in db.contacts on 
+                //            new {u.Id, x = (Guid)model.FollowerUserId } equals 
+                //            new { Id = c.FollowingUserId, x = (Guid)c.FollowerUserId } into contact
+                //            from c2 in contact.DefaultIfEmpty()
+                //            where (u.UserName.Contains(model.UserName) && u.Id != model.FollowerUserId)
+                //                        select new UserDto()
+                //            {
+                //                Id = u.Id,
+                //                UserName = u.UserName,
+                //                FullName = u.FirstName + " " + u.LastName,
+                //                IsInContact = c2.Id == null ? false : true,
+                //            }).ToListAsync();
 
                 if (user.Count() > 0)
                 {
@@ -153,6 +190,30 @@ namespace test.Services
                 }
             }
             catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Message = e.Message;
+            }
+            return result;
+        }
+        public async Task<ResultDto<List<UserDto>>> SearchUser_dapper(UserDto model)
+        {
+            var result = new ResultDto<List<UserDto>>();
+            try
+            {
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    var sql = "dbo.search_user";
+                    var param = new DynamicParameters();
+                    param.Add("@pUserName", model.UserName);
+                    param.Add("@pFollowerUserId", model.FollowerUserId);
+                    param.Add("@pPageNumber", model.PageNumber);
+                    param.Add("@pRowsPerPage", model.RowsPerPage);
+                    var r = await connection.QueryAsync<UserDto>(sql, param, commandType: CommandType.StoredProcedure);
+                    result.Data = r.ToList();
+                }
+            }
+            catch(Exception e)
             {
                 result.IsSuccess = false;
                 result.Message = e.Message;

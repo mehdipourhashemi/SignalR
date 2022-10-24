@@ -1,4 +1,7 @@
-﻿@{ Layout = null;}
+﻿@{
+    Layout = null;
+    var user = new test.Utilities.EncryptionUtility().UserInfo(Context);
+}
 <head>
 
     <style>
@@ -14,19 +17,20 @@
 
     </div>
     <div class="panel-body">
+        <i id="spiner_loadUser" class="fa fa-spinner fa-spin" style="display:none;position:absolute; top: 20%; left: 50%; color: rgb(137 137 137); font-size: 55px; transform: translate(-50%, -50%); z-index: 3;"></i>
         <div class="form-horizontal">
             <div class="form-group">
 
                 <div class="row">
-                    <div class="col-md-4">
-                        <label for="LastName" class=""> UserName:</label>
+                    <div class="col-sm-12 col-md-4">
+                        <label for="UserName" class=""> UserName:</label>
                     </div>
-                    <div class="col-sm-6">
-                        <input id="UserName" name="UserName" type="text" class="form-control" />
+                    <div class="col-xs-10 col-md-10 col-md-10">
+                        <input id="UserName" name="UserName" type="text" class="form-control" onkeyup="SearchUsers()" />
                     </div>
 
-                    <div class="col-md-2">
-                        <button style="border-radius:50%;" class="btn btn-info" onclick="SearchUsers()"><i class="fa fa-search"></i></button>
+                    <div class="col-xs-2 col-sm-2 col-md-2">
+                        <button id="Search_Btn" style="border-radius:50%;" class="btn btn-info"  onclick="SearchUsers()"><i class="fa fa-search"></i></button>
                     </div>
                 </div>
 
@@ -46,23 +50,30 @@
     var add_icon = `<i class="fa fa-plus"></i>`;
     var user_icon = `<i class="fa fa-user" style = ''></i>`;
     function SearchUsers() {
-        let url = '/chat/SearchUsers';
-        let inputModel = {
-            UserName: $('#UserName').val(),
-        };
-        $.post(url, { model: inputModel }, function (result) {
-            if (result.isSuccess) {
-                pickUsers_Contact(result.data);
-            }
-            else {
-                swal.fire(result.message);
-            }
-        });
+        //$('#spiner_loadUser').show();
+        if ($('#UserName').val().replaceAll(' ', '').length > 0) {
+            $('#Search_Btn').html(`<i class="fa fa-spinner fa-spin"></i>`);
+            let url = '/chat/SearchUsers';
+            let inputModel = {
+                UserName: $('#UserName').val(),
+            };
+            $.post(url, { model: inputModel }, function (result) {
+                $('#contact_users').html('');
+                if (result.isSuccess) {
+                    pickUsers_Contact(result.data);
+                }
+                else {
+                    swal.fire(result.message);
+                }
+                $('#Search_Btn').html(`<i class="fa fa-search"></i>`);
+                //$('#spiner_loadUser').hide();
+
+            });
+        }
     }
     function pickUsers_Contact(data) {
         let user = ``;
         var button = ``;
-        $('#contact_users').empty();
         for (let i = 0; i < data.length; i++) {
             if (data[i].isInContact) {
                 button = `<button class="btn btn-success" style="float: right;border-radius:50%;" data-id='${data[i].id}' onclick="DeleteContact(this)">${user_icon}</button>`;
@@ -70,6 +81,18 @@
             else {
                 button = `<button class="btn btn-primary" style="float: right;border-radius:50%;" data-id='${data[i].id}' onclick="AddContact(this)">${add_icon}</button>`;
             }
+            if ('@user.Id' == data[i].id) {
+                user += `<div class="row" style=" border: 1px solid #c7c7c7; border-radius: 20px; margin: 18px; padding: 7px;">
+                <div class="col-md-10" style="text-align:center">
+                    <h6>${data[i].userName}</h6>
+                    <br>
+                    <p style="color: #939393; font-size: 12px;">${data[i].fullName}</p>
+                </div>
+                <div class="col-md-2" style="text-align:center"><p style = '' class = ''>you</p></div>
+            </div>`;
+                continue;
+            }
+
             user += `<div class="row" style=" border: 1px solid #c7c7c7; border-radius: 20px; margin: 18px; padding: 7px;">
                 <div class="col-md-10" style="text-align:center">
                     <h6>${data[i].userName}</h6>

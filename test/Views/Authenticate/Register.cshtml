@@ -1,8 +1,8 @@
 ﻿@model test.ViewModels.UserDto
 <head>
-    <script src="~/js/persian-datepicker.min.js"></script>
-    <script src="~/js/persiandate.min.js"></script>
-    <link href="~/css/persian-datepicker.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/persian-date@latest/dist/persian-date.js"></script>
+    <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@latest/dist/css/persian-datepicker.min.css" />
 </head>
 <body dir="rtl">
     <div class="container">
@@ -46,7 +46,7 @@
                             <label asp-for="password">رمز عبور : </label>
                         </div>
                         <div class="col-md-8">
-                            <input asp-for="password" />
+                            <input asp-for="password" type="password"/>
                         </div>
                     </div>
                     <div class="col-md-12">
@@ -54,7 +54,7 @@
                             <label asp-for="ConfirmPassword">تکرار رمز عبور :  </label>
                         </div>
                         <div class="col-md-8">
-                            <input asp-for="ConfirmPassword" />
+                            <input asp-for="ConfirmPassword" type="password" />
                         </div>
                     </div>
                 </div>
@@ -63,6 +63,7 @@
         </div>
     </div>
     <script>
-        
+        $(document).ready(function () {
+            $("#JalaliBirthDate").pDatepicker();
     </script>
 </body>

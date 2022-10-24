@@ -38,6 +38,13 @@ namespace test.DB_Context
                 .HasMaxLength(100);
 
             modelBuilder.Entity<User>()
+               .Property(u => u.UserName)
+               .HasMaxLength(100);
+            modelBuilder.Entity<User>()
+               .Property(u => u.ConnectionId)
+               .HasMaxLength(30);
+
+            modelBuilder.Entity<User>()
                 .Property(u => u.LastName)
                 .HasMaxLength(100);
 
