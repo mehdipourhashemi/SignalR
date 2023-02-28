@@ -290,7 +290,7 @@
                 return
             }
             if (UserId == null) {
-                swal.fire('خطا', 'یک کاربر را انتخاب کنید', 'error')
+                swal.fire('خطا', 'لطفا یک کاربر را انتخاب کنید', 'error')
                 return
             }
             connection.invoke('SendMessageToOne', message, id, UserId);
