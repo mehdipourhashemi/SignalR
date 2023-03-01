@@ -57,7 +57,7 @@ namespace test.Controllers
         public async Task<IActionResult> SearchUsers(UserDto model)
         {
             model.FollowerUserId = new EncryptionUtility().UserInfo(HttpContext).Id;
-            var user = await db.SearchUser_dapper(model);
+            var user = await db.SearchUser(model);
             return Ok(user);
         }
         [HttpPost]
