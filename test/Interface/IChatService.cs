@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using test.Models;
 using test.Models.MessageModel;
 using test.Models.UserModel;
 using test.ViewModels;
@@ -17,5 +18,6 @@ namespace test.Interface
         public Task<ResultDto<bool>> AddContact(Contact model);
         public Task<ResultDto<bool>> DeleteContact(Contact model);
         public Task<ResultDto<List<UserDto>>> SearchUser_dapper(UserDto model);
+        public UsersWithFollowing GetAllUserWithFollowing();
     }
 }

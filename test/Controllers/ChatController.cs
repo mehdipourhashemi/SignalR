@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using test.Interface;
 using test.Models.MessageModel;
 using test.Models.UserModel;
+using test.Services;
 using test.Utilities;
 using test.ViewModels;
 
@@ -38,6 +39,8 @@ namespace test.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadMessages(UserDto Targetuser)
         {
+            var a = db.GetAllUserWithFollowing();
+
             var UserId = new EncryptionUtility().UserInfo(HttpContext).Id;
             var messages = await db.LoadMessages(UserId, Targetuser.Id, Targetuser.PageNumber, Targetuser.PageCount);
             return Ok(messages);

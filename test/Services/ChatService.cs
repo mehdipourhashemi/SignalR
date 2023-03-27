@@ -14,6 +14,8 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Text.Json;
+using test.Models;
 
 namespace test.Services
 {
@@ -219,6 +221,29 @@ namespace test.Services
                 result.Message = e.Message;
             }
             return result;
+        }
+        public UsersWithFollowing GetAllUserWithFollowing()
+        {
+            using (IDbConnection connection =
+                new SqlConnection(connectionString))
+            {
+                var query = @"select
+                            UserName,
+                            (
+                            select
+                            u.userName
+                            from contacts c
+                            JOIN users u ON c.followingUserId = u.Id
+                            WHERE c.FollowerUserId = users.Id
+                            for json path
+                            ) as followings
+                            from users users
+                            for json path, root('users')";
+                var users = connection.QuerySingle<string>(query, commandType: CommandType.Text);
+                //users.ForEach(u => u.FollowingUsers = JsonSerializer.Deserialize<ICollection<Contact>>(u.JSONContacts));
+                JsonSerializer.Deserialize<UsersWithFollowing>(users);
+                return JsonSerializer.Deserialize<UsersWithFollowing>(users);
+            }
         }
     }
 }

@@ -26,5 +26,7 @@ namespace test.Models.UserModel
         public virtual ICollection<Message> SendMessages { get; set; }
         public virtual ICollection<Contact> FollowingUsers { get; set; }
         public virtual ICollection<Contact> FollowerUsers { get; set; }
+        [NotMapped]
+        public string JSONContacts { get; set; }
     }
 }

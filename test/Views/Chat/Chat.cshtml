@@ -28,7 +28,7 @@
             float: left;
             padding: 10px;
             margin-bottom: 5px;
-            max-width: 100%;
+            max-width: 85%;
         }
 
         p.SentMessage {
@@ -38,7 +38,7 @@
             float: right;
             padding: 10px;
             margin-bottom: 5px;
-            max-width: 100%;
+            max-width: 85%;
         }
 
         .time {
@@ -248,6 +248,7 @@
                 PageNumber: 1
             }
             $.post(url, { Targetuser: inpuModel }, function (result) {
+                    debugger;
                 if (result.isSuccess) {
                     if (result.data.length > 0) {
                         //PageNumber++;
